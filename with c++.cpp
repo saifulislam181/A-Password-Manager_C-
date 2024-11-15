@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cctype> // For isdigit() and isalpha()
 using namespace std;
 
 // Encryption and Decryption Functions
@@ -14,6 +15,24 @@ string encrypt(string data) {
 
 string decrypt(string data) {
     return encrypt(data); // XORing again will decrypt it
+}
+
+// Helper Functions for Validations
+bool isValidEmail(const string& email) {
+    return email.find('@') != string::npos; // Check if '@' is in the email
+}
+
+bool isValidPassword(const string& password) {
+    if (password.length() < 8) return false; // Check length
+
+    bool hasNumber = false, hasLetter = false;
+
+    for (char ch : password) {
+        if (isdigit(ch)) hasNumber = true; // Check if there's a number
+        if (isalpha(ch)) hasLetter = true; // Check if there's a letter
+    }
+
+    return hasNumber && hasLetter; // Valid if it has both a number and a letter
 }
 
 // User Class
@@ -120,7 +139,17 @@ void deleteUserFromFile(string username) {
 }
 
 // User Class Method Implementations
+
 bool User::login(string uname, string pwd) {
+    if (!isValidEmail(uname)) {
+        cout << "Error: Username must be a valid email address." << endl;
+        return false;
+    }
+    if (!isValidPassword(pwd)) {
+        cout << "Error: Password must be at least 8 characters long and contain at least one number and one letter." << endl;
+        return false;
+    }
+
     User user = loadUserFromFile(uname);
     if (user.username == uname && user.password == pwd) {
         cout << "Login successful." << endl;
@@ -132,6 +161,15 @@ bool User::login(string uname, string pwd) {
 }
 
 void User::registerUser(string uname, string pwd) {
+    if (!isValidEmail(uname)) {
+        cout << "Error: Username must be a valid email address." << endl;
+        return;
+    }
+    if (!isValidPassword(pwd)) {
+        cout << "Error: Password must be at least 8 characters long and contain at least one number and one letter." << endl;
+        return;
+    }
+
     this->username = uname;
     this->password = pwd;
     saveUserToFile(*this);
@@ -139,6 +177,10 @@ void User::registerUser(string uname, string pwd) {
 }
 
 void User::editPassword(string newPassword) {
+    if (!isValidPassword(newPassword)) {
+        cout << "Error: Password must be at least 8 characters long and contain at least one number and one letter." << endl;
+        return;
+    }
     this->password = newPassword;
     updateUserInFile(*this);
     cout << "Password updated successfully." << endl;
